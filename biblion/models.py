@@ -18,7 +18,7 @@ except ImportError:
     twitter = None
 
 from biblion.managers import PostManager
-from biblion.settings import ALL_SECTION_NAME, SECTIONS
+from biblion.settings import ALL_SECTION_NAME, SECTIONS, SECTION_IN_URL
 from biblion.utils import can_tweet
 
 
@@ -126,12 +126,18 @@ class Post(models.Model):
     def get_absolute_url(self):
         if self.published:
             name = "blog_post"
-            kwargs = {
-                "year": self.published.strftime("%Y"),
-                "month": self.published.strftime("%m"),
-                "day": self.published.strftime("%d"),
-                "slug": self.slug,
-            }
+            if SECTION_IN_URL:
+                kwargs = {
+                    "section": self.section_slug,
+                    "slug": self.slug,
+                }
+            else:
+                kwargs = {
+                    "year": self.published.strftime("%Y"),
+                    "month": self.published.strftime("%m"),
+                    "day": self.published.strftime("%d"),
+                    "slug": self.slug,
+                }
         else:
             name = "blog_post_pk"
             kwargs = {

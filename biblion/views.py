@@ -11,7 +11,7 @@ from django.contrib.sites.models import Site
 
 from biblion.exceptions import InvalidSection
 from biblion.models import Post, FeedHit
-from biblion.settings import ALL_SECTION_NAME
+from biblion.settings import ALL_SECTION_NAME, SECTION_IN_URL
 
 
 def blog_index(request):
@@ -47,11 +47,16 @@ def blog_post_detail(request, **kwargs):
             raise Http404()
     else:
         queryset = Post.objects.current()
-        queryset = queryset.filter(
-            published__year = int(kwargs["year"]),
-            published__month = int(kwargs["month"]),
-            published__day = int(kwargs["day"]),
-        )
+        if SECTION_IN_URL:
+            queryset = queryset.filter(
+                section = Post.section_idx(kwargs["section"]),
+            )
+        else:
+            queryset = queryset.filter(
+                published__year = int(kwargs["year"]),
+                published__month = int(kwargs["month"]),
+                published__day = int(kwargs["day"]),
+            )
         post = get_object_or_404(queryset, slug=kwargs["slug"])
         post.inc_views()
     

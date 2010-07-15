@@ -38,9 +38,10 @@ def blog_section_list(request, section):
 
 
 def blog_post_detail(request, **kwargs):
-    
+
     if "post_pk" in kwargs:
-        if request.user.is_authenticated() and request.user.is_staff:
+        if request.user.is_authenticated() and \
+           request.user.has_perm("biblion.change_post"):
             queryset = Post.objects.all()
             post = get_object_or_404(queryset, pk=kwargs["post_pk"])
         else:

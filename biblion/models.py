@@ -124,25 +124,24 @@ class Post(models.Model):
         super(Post, self).save(**kwargs)
     
     def get_absolute_url(self):
+        if SECTION_IN_URL:
+            kwargs = {
+                "section": self.section_slug,
+            }
+        else:
+            kwargs = {
+                "year": self.published.strftime("%Y"),
+                "month": self.published.strftime("%m"),
+                "day": self.published.strftime("%d"),
+            }
+        
         if self.published:
             name = "blog_post"
-            if SECTION_IN_URL:
-                kwargs = {
-                    "section": self.section_slug,
-                    "slug": self.slug,
-                }
-            else:
-                kwargs = {
-                    "year": self.published.strftime("%Y"),
-                    "month": self.published.strftime("%m"),
-                    "day": self.published.strftime("%d"),
-                    "slug": self.slug,
-                }
+            kwargs["slug"] = self.slug
         else:
             name = "blog_post_pk"
-            kwargs = {
-                "post_pk": self.pk,
-            }
+            kwargs["post_pk"] = self.pk
+
         return reverse(name, kwargs=kwargs)
     
     def inc_views(self):

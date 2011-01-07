@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.utils import simplejson as json
 
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext_lazy as _
 
 try:
     import twitter
@@ -22,24 +23,28 @@ from biblion.settings import ALL_SECTION_NAME, SECTIONS, SECTION_IN_URL
 from biblion.utils import can_tweet
 
 
-
 def ig(L, i):
     for x in L:
         yield x[i]
 
 
+class Category(models.Model):
+    name = models.CharField(_("Category Name"), max_length=200)
+    def __unicode__(self):
+        return self.name
+    
 class Post(models.Model):
     
     SECTION_CHOICES = [(1, ALL_SECTION_NAME)] + zip(range(2, 2 + len(SECTIONS)), ig(SECTIONS, 1))
     
-    section = models.IntegerField(choices=SECTION_CHOICES)
+    section = models.IntegerField(_("Section"), choices=SECTION_CHOICES)
     
-    title = models.CharField(max_length=90)
+    title = models.CharField(_("Title"), max_length=90)
     slug = models.SlugField()
     author = models.ForeignKey(User, related_name="posts")
     
     teaser_html = models.TextField(editable=False)
-    content_html = models.TextField(editable=False)
+    content_html = models.TextField(_("Text"), editable=False)
     
     tweet_text = models.CharField(max_length=140, editable=False)
     
@@ -48,6 +53,9 @@ class Post(models.Model):
     published = models.DateTimeField(null=True, blank=True, editable=False) # when last published
     
     view_count = models.IntegerField(default=0, editable=False)
+    
+    categories = models.ManyToManyField(Category, verbose_name=_("Categories"),
+                                        blank=True, null=True, related_name="posts")
     
     @staticmethod
     def section_idx(slug):
@@ -188,6 +196,9 @@ class Image(models.Model):
             return "{{ %d }}" % self.pk
         else:
             return "deleted image"
+
+
+
 
 class FeedHit(models.Model):
     

@@ -37,8 +37,22 @@ def blog_section_list(request, section):
     }, context_instance=RequestContext(request))
 
 
+def posts_of_category(request, section, category):
+    try:
+        posts = Post.objects.section(section).filter(category__pk=category)
+    except InvalidSection:
+        raise Http404()
+    
+    return render_to_response("biblion/blog_section_list.html", {
+        "section_slug": section,
+        "section_name": dict(Post.SECTION_CHOICES)[Post.section_idx(section)],
+        "posts": posts,
+        "category": category,
+    }, context_instance=RequestContext(request))
+    
+    
 def blog_post_detail(request, **kwargs):
-
+    
     if "post_pk" in kwargs:
         if request.user.is_authenticated() and \
            request.user.has_perm("biblion.change_post"):
